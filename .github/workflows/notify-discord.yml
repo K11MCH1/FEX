@@ -12,5 +12,5 @@ jobs:
         run: |
           curl -H "Content-Type: application/json" \
                -X POST \
-               -d "{\"content\":\"🔔 New update from upstream on \`${{ github.repository }}\` → ${GITHUB_SHA}\nhttps://github.com/${{ github.repository }}/commit/${GITHUB_SHA}\"}" \
+               -d "{\"content\":\"https://github.com/${{ github.repository }}/commit/${GITHUB_SHA}\"}" \
                ${{ secrets.FEXEMU_WEBHOOK }}
