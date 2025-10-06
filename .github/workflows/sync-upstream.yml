@@ -1,8 +1,7 @@
 name: Sync Upstream
-
 on:
   schedule:
-    - cron: "*/1 * * * *"   # every 5 minutes
+    - cron: "*/1 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -17,10 +16,23 @@ jobs:
       - name: Add upstream
         run: |
           git remote add upstream https://github.com/FEX-Emu/FEX.git
-          git fetch upstream
+          git fetch upstream --prune
+
+      - name: Merge upstream main
+        run: |
           git checkout main
           git merge upstream/main --ff-only || true
 
+      - name: Fetch all upstream PRs
+        run: |
+          mkdir -p .pr
+          for pr in $(git ls-remote upstream 'refs/pull/*/head' | awk '{print $2}' | cut -d'/' -f3); do
+            git fetch upstream pull/$pr/head:pr/$pr || true
+          done
+
       - name: Push changes to fork
         run: |
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main --force
+          for pr in $(git branch -r | grep 'upstream/pr/' | sed 's#upstream/##'); do
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git $pr --force || true
+          done
